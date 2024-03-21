@@ -1,15 +1,18 @@
 import pandas as pd
 
+# Load data from CSV files
+df1 = pd.read_csv('data/BACS 2024 Roster - BACS Roster.csv')
+df2 = pd.read_csv('data/QUIZ - Required Readings 2 (Responses) - Form Responses 1.csv')
 
-df1 = pd.read_csv('data/BACS 2024 Roster - BACS Roster.csv')  # Replace 'path_to_first_csv.csv' with the actual path
-df2 = pd.read_csv('data/SURVEY-About Us (Responses) - Form Responses 1.csv')  # Replace 'path_to_second_csv.csv' with the actual path
+df2.rename(columns={'School ID (that you registered with)': 'STUDENT ID'}, inplace=True) # Modify the columns name if needed
 
-# Rename the student_id column in df2 is needed
-df2.rename(columns={'Please provide your NTHU student ID': 'STUDENT ID'}, inplace=True)
+df2['STUDENT ID'] = df2['STUDENT ID'].astype(int)
 
-join_columns = ['Email Address'] # Define the column from df2 need to be merge
+df2_unique = df2.drop_duplicates(subset=['STUDENT ID'], keep='first')
 
-merged_df = pd.merge(df1, df2[['STUDENT ID']+join_columns], on='STUDENT ID', how='left')
+join_columns = ['Score'] # MAdd the columns name you want to merge
+
+merged_df = pd.merge(df1, df2_unique[['STUDENT ID'] + join_columns], on='STUDENT ID', how='left')
 
 missing_ids = df2[~df2['STUDENT ID'].isin(df1['STUDENT ID'])]['STUDENT ID']
 if not missing_ids.empty:
@@ -20,5 +23,3 @@ else:
 merged_df.to_csv('output/merged_output.csv', index=False)
 
 print("Merging complete. Output saved to 'merged_output.csv'.")
-
-
